@@ -149,7 +149,7 @@ exports.default = {
   private: {
     text: 'Webview',
     trustedurl: [/^.*$/],
-    src: "http://10.14.44.100:8001/public/static/qa-camera.html"
+    src: "https://imwalson.github.io/quickapp-webview-demo/web/test-qa-webview.html"
   },
   onInit: function onInit() {
     console.log('Webview loaded');

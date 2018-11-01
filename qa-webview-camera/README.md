@@ -4,7 +4,7 @@
 快应用中webview调用系统能力的demo
 
 #### 使用快应用调试器扫码预览
-<img src="/screenshot/qr.png" alt="Qr code" style="width: 50%">
+<img src="/qrcode/qr.png" alt="Qr code" style="width: 50%">
 
 ## Start
 

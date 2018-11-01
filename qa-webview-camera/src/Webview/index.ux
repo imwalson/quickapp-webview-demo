@@ -32,7 +32,7 @@
     private: {
       text: 'Webview',
       trustedurl: [ /^.*$/ ],
-      src: "https://imwalson.github.io/v2ex-quickapp-demo/web/test-qa-webview.html" // "http://10.14.44.100:8001/public/static/qa-camera.html"
+      src: "https://imwalson.github.io/quickapp-webview-demo/web/test-qa-webview.html"
     },
     onInit () {
       console.log('Webview loaded');

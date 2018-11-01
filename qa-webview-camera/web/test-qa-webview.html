@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <style>
     .cross-img {
-      width: 100%;
+      width: 300px;
       display: block;
     }
     .tips {
@@ -31,11 +31,11 @@
     <div v-show="qrRes">扫码结果： {{ qrRes }}</div>
     <div v-show="cameraImage">
       <p>拍照结果： </p>
-      <img :src="cameraImage" style="width: 300px;height: 300px;" />
+      <img :src="cameraImage" class="cross-img" />
     </div>
     <div v-show="pickImage">
       <p>选择照片结果： </p>
-      <img :src="pickImage" style="width: 300px;height: 300px;" />
+      <img :src="pickImage" class="cross-img" />
     </div>
   </div>
 </body>
