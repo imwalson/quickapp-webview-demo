@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>test quickapp webview</title>
+  <script src="https://unpkg.com/vue@2.5.17/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <style>
+    .cross-img {
+      width: 100%;
+      display: block;
+    }
+    .tips {
+      font-size: 12px;
+      color: #aaaaaa;
+      margin: 30px 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="vuecnt" v-cloak>
+    <el-button type="primary" @click="openCamera">拍照</el-button>
+    <el-button type="primary" @click="pickImg">选择图片</el-button>
+    <el-button @click="openQr">扫一扫</el-button>
+    <div class="tips">由于图片base64后字符串很大，快应用postMessage回传信息可能有点慢，请耐心等待</div>
+
+    <div v-show="qrRes">扫码结果： {{ qrRes }}</div>
+    <div v-show="cameraImage">
+      <p>拍照结果： </p>
+      <img :src="cameraImage" style="width: 300px;height: 300px;" />
+    </div>
+    <div v-show="pickImage">
+      <p>选择照片结果： </p>
+      <img :src="pickImage" style="width: 300px;height: 300px;" />
+    </div>
+  </div>
+</body>
+<script>
+  var vueApp;
+  // channelReady(function (bAvailable) {
+  //   alert("是否存在框架服务：" + bAvailable)
+  // });
+
+  // 初始化vue对象
+  vueApp = new Vue({
+    el: '#vuecnt',
+    data: {
+      qrRes: '',
+      pickImage: '',
+      cameraImage: ''
+    },
+    mounted: function () {
+      var _this = this;
+      try {
+        system.onmessage = function (data) {
+          alert("message received from quickapp: " + data);
+          try { data = JSON.parse(data); } catch (error) {}
+          if( data.type === 'qr' ){ 
+            _this.qrRes = data.data || '';
+          }else if( data.type === 'pickImage' ){ 
+            _this.pickImage = data.data || '';
+          }else if( data.type === 'camera' ){ 
+            _this.cameraImage = data.data || '';
+          }
+        };
+      } catch (error) {
+        console.log('不存在快应用框架服务');
+      }
+    },
+    methods: {
+      openQr: function () {
+        this.qrRes = '';
+        if (system && system.postMessage) {
+          system.postMessage( JSON.stringify({
+            type: 'openQr'
+          }));
+        }
+      },
+      pickImg: function () {
+        this.pickImage = '';
+        if (system && system.postMessage) {
+          system.postMessage( JSON.stringify({
+            type: 'pickImage'
+          }));
+        }
+      },
+      openCamera: function () {
+        this.cameraImage = '';
+        if (system && system.postMessage) {
+          system.postMessage( JSON.stringify({
+            type: 'camera'
+          }));
+        }
+      },
+
+    }
+  });
+</script>
+
+</html>

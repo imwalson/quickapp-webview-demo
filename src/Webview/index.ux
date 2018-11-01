@@ -1,0 +1,167 @@
+<template>
+  <!-- template里只能有一个根节点 -->
+  <div class="demo-page">
+    <web 
+      id="web" 
+      onmessage="onMessage" 
+      trustedurl= "{{ trustedurl }}"
+      src="{{ src }}"
+    ></web>
+  </div>
+</template>
+
+<style>
+  .demo-page {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
+
+<script>
+  var router = require('@system.router')
+  var barcode = require('@system.barcode')
+  var media = require('@system.media')
+  var image = require('@system.image')
+  var file = require('@system.file')
+  var prompt = require('@system.prompt')
+  var app = require('@system.app')
+  var Buffer = require('buffer').Buffer;
+
+  export default {
+    private: {
+      text: 'Webview',
+      trustedurl: [ /^.*$/ ],
+      src: "https://imwalson.github.io/v2ex-quickapp-demo/web/test-qa-webview.html" // "http://10.14.44.100:8001/public/static/qa-camera.html"
+    },
+    onInit () {
+      console.log('Webview loaded');
+    },
+    onMessage(e) {
+      var _this = this;
+      console.log("message received from webview: ");
+      console.log(e);
+      var message = e.message;
+      try { message = JSON.parse(message); } catch (error) {}
+      // 打开扫一扫
+      if( message.type === 'openQr'){
+        barcode.scan({
+          success: function (data) {
+            console.log(`handling success: ${data.result}`)
+            _this.$element('web').postMessage({
+              message: JSON.stringify({
+                type: 'qr',
+                data: data.result
+              }) 
+            })
+          },
+          fail: function (data, code) {
+            console.log(`handling fail, code = ${code}`)
+          }
+        })
+      } 
+      // 选择图片
+      else if(message.type === 'pickImage') {
+        media.pickImage({
+          success: function (data) {
+            console.log(`选择图片成功: ${data.uri}`)
+            // 压缩照片
+            image.compressImage({
+              uri: data.uri,
+              quality: 60,
+              radio: 10, // 变为原图的1/10大小
+              format: 'JPEG',
+              success: function (img) {
+                console.log('压缩照片成功' + img.uri)
+                // 转化为 array buffer
+                file.readArrayBuffer({
+                  uri: img.uri,
+                  success: function (res) {
+                    // 转化为 base64
+                    var base64Str = new Buffer(res.buffer).toString('base64');
+                    var imgBase64 = 'data:image/png;base64,' + base64Str;
+                    //console.log( 'data:image/png;base64,' + base64Str )
+                    _this.$element('web').postMessage({
+                      message: JSON.stringify({
+                        type: 'pickImage',
+                        data: imgBase64
+                      }) 
+                    })
+                  },
+                  fail: function (data, code) {
+                    console.log(`压缩照片失败, code = ${code}`)
+                  }
+                })
+              },
+              fail: function (data, code) {
+                console.log(`选择图片失败, code = ${code}`)
+              }
+            })
+            
+          }
+        })
+      } 
+      // 拍照
+      else if ( message.type === 'camera' ){
+        media.takePhoto({
+          success: function (data) {
+            console.log(`拍照成功: ${data.uri}`)
+            // 压缩照片
+            image.compressImage({
+              uri: data.uri,
+              quality: 60,
+              radio: 10, // 变为原图的1/10大小
+              format: 'JPEG',
+              success: function (img) {
+                console.log('压缩照片成功' + img.uri)
+                // 转化为 array buffer
+                file.readArrayBuffer({
+                  uri: img.uri,
+                  success: function (res) {
+                    // 转化为 base64
+                    var base64Str = new Buffer(res.buffer).toString('base64');
+                    var imgBase64 = 'data:image/png;base64,' + base64Str;
+                    //console.log( 'data:image/png;base64,' + base64Str )
+                    _this.$element('web').postMessage({
+                      message: JSON.stringify({
+                        type: 'camera',
+                        data: imgBase64
+                      }) 
+                    })
+                  },
+                  fail: function (data, code) {
+                    console.log(`压缩照片失败, code = ${code}`)
+                  }
+                })
+              },
+              fail: function (data, code) {
+                console.log(`拍照失败, code = ${code}`)
+              }
+            })
+            
+          }
+        })
+
+      }
+    },
+    onBackPress () {
+      var _this = this;
+      this.$element('web').canBack({
+        callback: function (e) {
+          if (e) {
+            // 加载历史列表中的上一个 URL
+            this.$element('web').back()
+          } else {
+            router.back()
+          }
+        }.bind(this)
+      })
+      // 阻止默认行为，等待异步操作
+      return true
+    },
+    quit() {
+      this.$app.exit();
+    }
+    
+  }
+</script>
